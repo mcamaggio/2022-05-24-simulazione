@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
@@ -22,8 +23,48 @@ public class Model {
 	
 	private List<Track> listaMigliore;
 	
-	// RICORSIONE DI OTTIMIZZAZIONE
 	public List<Track> cercaLista(Track c, int m) {
+		// RECUPERO LA COMPONENTE CONNESSA DI C
+		Set<Track> componenteConnessa;
+		ConnectivityInspector<Track, DefaultWeightedEdge> ci = new ConnectivityInspector<>(this.grafo);
+		componenteConnessa = ci.connectedSetOf(c); //Tutti i vertici connessi a C in qualche modo
+		
+		List<Track> canzoniValide = new ArrayList<>();
+		canzoniValide.add(c);
+		componenteConnessa.remove(c);
+		canzoniValide.addAll(componenteConnessa);
+		
+		List<Track> parziale = new ArrayList<>();
+		listaMigliore = new ArrayList<>();
+		parziale.add(c);
+		
+		cerca(parziale, canzoniValide, m, 1);
+		
+		return listaMigliore;
+	}
+	
+	private void cerca(List<Track> parziale, List<Track> canzoniValide, int m, int L) {
+		
+		if(sommaMemoria(parziale) > m) 
+			return;
+		
+		//Parziale è valida
+		if(parziale.size() > listaMigliore.size()) {
+			listaMigliore = new ArrayList<>(parziale);
+		}
+		
+		if(L == canzoniValide.size())
+			return;
+		
+		parziale.add(canzoniValide.get(L));
+		cerca(parziale, canzoniValide, m, L+1);
+		parziale.remove(canzoniValide.get(L));
+		cerca(parziale, canzoniValide, m, L+1);
+		
+	}
+
+	// RICORSIONE DI OTTIMIZZAZIONE
+/*	public List<Track> cercaLista(Track c, int m) {
 		// RECUPERO LA COMPONENTE CONNESSA DI C
 		List<Track> canzoniValide = new ArrayList<Track>();
 		ConnectivityInspector<Track, DefaultWeightedEdge> ci = new ConnectivityInspector<>(this.grafo);
@@ -56,7 +97,7 @@ public class Model {
 		}
 			
 				
-	}
+	}*/
 	
 	private int sommaMemoria(List<Track> canzoni) {
 		int somma = 0;
